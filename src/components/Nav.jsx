@@ -36,7 +36,7 @@ const Nav = () => {
   return (
     <AppBar position="static">
       <Toolbar>
-        <Typography variant="h6" sx={{ flexGrow: 1 }} color="inherit" component={Link} href="/">
+        <Typography variant="h6" sx={{ flexGrow: 1 }} color="inherit" component={Link} href="/list">
           Pantry Management
         </Typography>
         <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
