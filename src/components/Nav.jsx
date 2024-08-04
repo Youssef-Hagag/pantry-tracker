@@ -1,27 +1,62 @@
+"use client";
 import Link from 'next/link';
+import { useState } from 'react';
+import { useUser } from '../context/UserContext';
 
-const NavBar = () => {
+const Nav = () => {
+  const { user, signOut } = useUser();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
   return (
-    <nav className="bg-blue-600 p-4 shadow-md">
-      <ul className="flex space-x-4">
-        <li>
-          <Link href="/list">
-            <div className="text-white">Pantry List</div>
+    <nav className="bg-gray-800 p-4">
+      <div className="max-w-7xl mx-auto flex justify-between items-center">
+        <div className="text-xl">Pantry Management</div>
+        <button
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          className="md:hidden"
+        >
+          ☰
+        </button>
+        <div className={`space-x-4 md:flex ${isMenuOpen ? 'block' : 'hidden'}`}>
+          <Link href="/list" className="block md:inline-block">
+            List
           </Link>
-        </li>
-        <li>
-          <Link href="/search">
-            <div className="text-white">Search</div>
+          <Link href="/search" className="block md:inline-block">
+            Search
           </Link>
-        </li>
-        <li>
-          <Link href="/add">
-            <div className="text-white">Add Item</div>
+          <Link href="/add" className="block md:inline-block">
+            Add Item
           </Link>
-        </li>
-      </ul>
+          {user ? (
+            <>
+              <span className="block md:inline-block">
+                {user.email}
+              </span>
+              <button
+                onClick={handleSignOut}
+                className="block md:inline-block"
+              >
+                Sign Out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/signin" className="block md:inline-block">
+                Sign In
+              </Link>
+              <Link href="/signup" className="block md:inline-block">
+                Sign Up
+              </Link>
+            </>
+          )}
+        </div>
+      </div>
     </nav>
   );
 };
 
-export default NavBar;
+export default Nav;

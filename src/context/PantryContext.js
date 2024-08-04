@@ -1,37 +1,59 @@
 "use client";
 import { createContext, useContext, useState, useEffect } from 'react';
-import { db } from '../firebase';
-import { collection, addDoc, deleteDoc, doc, updateDoc, onSnapshot } from 'firebase/firestore';
+import { db, app } from '@/firebase';
+import { collection, setDoc, deleteDoc, doc, updateDoc, onSnapshot, getDocs } from 'firebase/firestore';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 const PantryContext = createContext();
+const auth = getAuth(app);
 
 export const usePantry = () => useContext(PantryContext);
 
 export const PantryProvider = ({ children }) => {
   const [items, setItems] = useState([]);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, 'pantry'), (snapshot) => {
-      const itemsData = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-      setItems(itemsData);
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+      if (user) {
+        fetchItems(user);
+      } else {
+        setItems([]);
+      }
     });
 
-    return () => unsubscribe();
+    return () => unsubscribeAuth();
   }, []);
 
+  const fetchItems = async (user) => {
+    if (user) {
+      const itemsSnapshot = await getDocs(collection(db, 'pantry', user.uid, 'items'));
+      const itemsList = itemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setItems(itemsList);
+    }
+  };
+
   const addItem = async (item) => {
-    const docRef = await addDoc(collection(db, 'pantry'), item);
-    setItems([...items, { ...item, id: docRef.id }]);
+    if (user) {
+      const itemRef = doc(collection(db, 'pantry', user.uid, 'items'));
+      await setDoc(itemRef, { ...item, userId: user.uid });
+      fetchItems(user);
+    }
   };
 
   const removeItem = async (id) => {
-    await deleteDoc(doc(db, 'pantry', id));
-    setItems(items.filter(item => item.id !== id));
+    if (user) {
+      await deleteDoc(doc(db, 'pantry', user.uid, 'items', id));
+      fetchItems(user);
+    }
   };
 
   const updateItem = async (id, updatedItem) => {
-    await updateDoc(doc(db, 'pantry', id), updatedItem);
-    setItems(items.map(item => (item.id === id ? { ...updatedItem, id } : item)));
+    if (user) {
+      await updateDoc(doc(db, 'pantry', user.uid, 'items', id), updatedItem);
+      fetchItems(user);
+    }
   };
 
   return (
