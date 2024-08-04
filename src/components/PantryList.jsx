@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { usePantry } from '../context/PantryContext';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { Card, CardContent, CardMedia, Typography, Button, Box, Modal, TextField } from '@mui/material';
 
 const PantryList = ({ items }) => {
   const { removeItem, updateItem } = usePantry();
@@ -48,92 +49,105 @@ const PantryList = ({ items }) => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto mt-10">
-      <ul className="space-y-4">
-        {items.map((item) => (
-          <li key={item.id} className="flex items-center justify-between p-4 bg-white shadow rounded-lg">
-            <div className="flex items-center space-x-4">
-              {item.imageUrl && <img src={item.imageUrl} alt={item.name} className="w-16 h-16 rounded" />}
-              <div>
-                <p className="text-lg font-semibold">{item.name}</p>
-                <p className="text-gray-600">Quantity: {item.quantity}</p>
-              </div>
-            </div>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => removeItem(item.id)}
-                className="px-4 py-2 bg-red-500 rounded hover:bg-red-600"
-              >
-                Remove
-              </button>
-              <button
+    <Box sx={{ maxWidth: 600, mx: 'auto', mt: 4 }}>
+      {items.map((item) => (
+        <Card key={item.id} sx={{ mb: 2 }}>
+          {item.imageUrl && (
+            <CardMedia
+              component="img"
+              height="140"
+              image={item.imageUrl}
+              alt={item.name}
+            />
+          )}
+          <CardContent>
+            <Typography variant="h6">{item.name}</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Quantity: {item.quantity}
+            </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+              <Button
+                variant="contained"
+                color="primary"
                 onClick={() => handleUpdate(item)}
-                className="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600"
               >
                 Update
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
+              </Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={() => removeItem(item.id)}
+              >
+                Remove
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
+      ))}
 
-      {editingItem && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-lg">
-            <h2 className="text-lg font-bold mb-4">Update Item</h2>
-            <div className="mb-4">
-              <label className="block text-sm font-bold mb-2" htmlFor="name">Item Name</label>
-              <input
-                id="name"
-                type="text"
-                placeholder="Item Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                className="w-full p-2 border rounded"
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-bold mb-2" htmlFor="quantity">Quantity</label>
-              <input
-                id="quantity"
-                type="number"
-                placeholder="Quantity"
-                value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
-                required
-                className="w-full p-2 border rounded"
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-bold mb-2" htmlFor="image">Image</label>
-              <input
-                id="image"
-                type="file"
-                onChange={handleImageChange}
-                className="w-full p-2 border rounded"
-              />
-            </div>
-            <div className="flex space-x-2">
-              <button
-                type="submit"
-                className="px-4 py-2 bg-primary rounded hover:opacity-75"
-                disabled={loading}
-              >
-                {loading ? 'Updating...' : 'Update Item'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setEditingItem(null)}
-                className="px-4 py-2 bg-gray-500 rounded hover:bg-gray-600"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-    </div>
+      <Modal
+        open={Boolean(editingItem)}
+        onClose={() => setEditingItem(null)}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: 400,
+            bgcolor: 'background.paper',
+            border: '2px solid #000',
+            boxShadow: 24,
+            p: 4,
+          }}
+        >
+          <Typography id="modal-modal-title" variant="h6" component="h2">
+            Update Item
+          </Typography>
+          <TextField
+            fullWidth
+            margin="normal"
+            label="Item Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+          <TextField
+            fullWidth
+            margin="normal"
+            label="Quantity"
+            type="number"
+            value={quantity}
+            onChange={(e) => setQuantity(e.target.value)}
+            required
+          />
+          <TextField
+            fullWidth
+            margin="normal"
+            type="file"
+            onChange={handleImageChange}
+          />
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+            <Button type="submit" variant="contained" color="primary" disabled={loading}>
+              {loading ? 'Updating...' : 'Update Item'}
+            </Button>
+            <Button
+              type="button"
+              variant="contained"
+              color="secondary"
+              onClick={() => setEditingItem(null)}
+            >
+              Cancel
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
+    </Box>
   );
 };
 

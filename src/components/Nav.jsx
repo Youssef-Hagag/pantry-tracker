@@ -1,61 +1,126 @@
 "use client";
-import Link from 'next/link';
 import { useState } from 'react';
+import Link from 'next/link';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import MenuIcon from '@mui/icons-material/Menu';
+import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
 import { useUser } from '../context/UserContext';
+import { useRouter } from 'next/navigation';
+
 
 const Nav = () => {
   const { user, signOut } = useUser();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const router = useRouter();
+
+  const handleMenu = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
   const handleSignOut = async () => {
     await signOut();
+    handleClose();
+    router.push('/signin');
   };
 
   return (
-    <nav className="bg-gray-800 p-4">
-      <div className="max-w-7xl mx-auto flex justify-between items-center">
-        <div className="text-xl">Pantry Management</div>
-        <button
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="md:hidden"
-        >
-          ☰
-        </button>
-        <div className={`space-x-4 md:flex ${isMenuOpen ? 'block' : 'hidden'}`}>
-          <Link href="/list" className="block md:inline-block">
+    <AppBar position="static">
+      <Toolbar>
+        <Typography variant="h6" sx={{ flexGrow: 1 }} color="inherit" component={Link} href="/">
+          Pantry Management
+        </Typography>
+        <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
+          <Button color="inherit" component={Link} href="/list">
             List
-          </Link>
-          <Link href="/search" className="block md:inline-block">
+          </Button>
+          <Button color="inherit" component={Link} href="/search">
             Search
-          </Link>
-          <Link href="/add" className="block md:inline-block">
+          </Button>
+          <Button color="inherit" component={Link} href="/add">
             Add Item
-          </Link>
+          </Button>
           {user ? (
             <>
-              <span className="block md:inline-block">
+              <Button color='inherit'>
                 {user.email}
-              </span>
-              <button
-                onClick={handleSignOut}
-                className="block md:inline-block"
-              >
+              </Button>
+              <Button color="inherit" onClick={handleSignOut}>
                 Sign Out
-              </button>
+              </Button>
             </>
           ) : (
             <>
-              <Link href="/signin" className="block md:inline-block">
+              <Button color="inherit" component={Link} href="/signin">
                 Sign In
-              </Link>
-              <Link href="/signup" className="block md:inline-block">
+              </Button>
+              <Button color="inherit" component={Link} href="/signup">
                 Sign Up
-              </Link>
+              </Button>
             </>
           )}
-        </div>
-      </div>
-    </nav>
+        </Box>
+        <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
+          <IconButton
+            size="large"
+            edge="end"
+            color="inherit"
+            aria-label="menu"
+            onClick={handleMenu}
+          >
+            <MenuIcon />
+          </IconButton>
+          <Menu
+            anchorEl={anchorEl}
+            anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            keepMounted
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            open={Boolean(anchorEl)}
+            onClose={handleClose}
+          >
+            <MenuItem onClick={handleClose} component={Link} href="/list">
+              List
+            </MenuItem>
+            <MenuItem onClick={handleClose} component={Link} href="/search">
+              Search
+            </MenuItem>
+            <MenuItem onClick={handleClose} component={Link} href="/add">
+              Add Item
+            </MenuItem>
+            {user ? (
+              <>
+                <MenuItem>{user.email}</MenuItem>
+                <MenuItem onClick={handleSignOut}>Sign Out</MenuItem>
+              </>
+            ) : (
+              <>
+                <MenuItem onClick={handleClose} component={Link} href="/signin">
+                  Sign In
+                </MenuItem>
+                <MenuItem onClick={handleClose} component={Link} href="/signup">
+                  Sign Up
+                </MenuItem>
+              </>
+            )}
+          </Menu>
+        </Box>
+      </Toolbar>
+    </AppBar>
   );
 };
 

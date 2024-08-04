@@ -1,15 +1,19 @@
 "use client";
 import { useState } from 'react';
-import { usePantry } from '../context/PantryContext';
+import { usePantry } from '@/context/PantryContext';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { v4 as uuidv4 } from 'uuid';
+import { TextField, Button, Box, Paper, Typography } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { useRouter } from 'next/navigation';
 
-const AddItem = ({ onSuccess }) => {
+const AddItem = () => {
   const { addItem } = usePantry();
   const [name, setName] = useState('');
   const [quantity, setQuantity] = useState('');
   const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(false);
+  const theme = useTheme();
+  const router = useRouter()
 
   const handleImageChange = (e) => {
     setImage(e.target.files[0]);
@@ -20,58 +24,70 @@ const AddItem = ({ onSuccess }) => {
     setLoading(true);
 
     let imageUrl = '';
-
     if (image) {
       const storage = getStorage();
-      const imageRef = ref(storage, `images/${uuidv4()}_${image.name}`);
+      const imageRef = ref(storage, `images/${image.name}`);
       await uploadBytes(imageRef, image);
       imageUrl = await getDownloadURL(imageRef);
     }
 
-    const newItem = { name, quantity: parseInt(quantity, 10), imageUrl };
-    await addItem(newItem);
-
-    setLoading(false);
+    await addItem({ name, quantity: parseInt(quantity, 10), imageUrl });
     setName('');
     setQuantity('');
     setImage(null);
-
-    if (onSuccess) onSuccess();
+    setLoading(false);
+    router.push('/list');
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mb-8">
-      <div className="flex flex-col space-y-4">
-        <input
-          type="text"
-          placeholder="Item Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-          className="w-full p-2 border rounded"
-        />
-        <input
-          type="number"
-          placeholder="Quantity"
-          value={quantity}
-          onChange={(e) => setQuantity(e.target.value)}
-          required
-          className="w-full p-2 border rounded"
-        />
-        <input
-          type="file"
-          onChange={handleImageChange}
-          className="w-full p-2 border rounded"
-        />
-        <button
+    <Paper
+      component="form"
+      onSubmit={handleSubmit}
+      sx={{
+        px: { xs: 2, sm: 4, md: 6, lg: 10 },  
+        py: { xs: 4, sm: 6 },  
+        boxShadow: 0,
+        backgroundColor: theme.palette.background.main,
+        width: '100%', 
+      }}
+    >
+      <Typography variant="h5" component="h2" gutterBottom sx={{ textAlign: 'center', mb: 4 }}>
+        Add New Item
+      </Typography>
+      <TextField
+        fullWidth
+        margin="normal"
+        label="Item Name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        required
+      />
+      <TextField
+        fullWidth
+        margin="normal"
+        label="Quantity"
+        type="number"
+        value={quantity}
+        onChange={(e) => setQuantity(e.target.value)}
+        required
+      />
+      <TextField
+        fullWidth
+        margin="normal"
+        type="file"
+        onChange={handleImageChange}
+      />
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+        <Button
           type="submit"
-          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+          variant="contained"
+          color="primary"
           disabled={loading}
         >
           {loading ? 'Adding...' : 'Add Item'}
-        </button>
-      </div>
-    </form>
+        </Button>
+      </Box>
+    </Paper>
   );
 };
 

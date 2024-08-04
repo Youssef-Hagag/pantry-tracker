@@ -31,3 +31,19 @@ body {
     text-wrap: balance;
   }
 }
+
+::-webkit-scrollbar {
+  width: 12px;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-track {
+  
+  background: #f7f9fa;
+}
+::-webkit-scrollbar-thumb {
+  background: #145ea7;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #8acce6;
+}
+
