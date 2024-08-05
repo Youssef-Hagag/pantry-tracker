@@ -49,7 +49,7 @@ const SignInPage = () => {
           Sign In
         </button>
         <p className="mt-4">
-          Don't have an account? <Link href="/signup" className="text-blue-500 hover:underline">Create one now!</Link>
+          Don{"'"}t have an account? <Link href="/signup" className="text-blue-500 hover:underline">Create one now!</Link>
         </p>
       </form>
     </div>
